@@ -20,6 +20,10 @@ class Program
     static List<Furniture> furnitures = new List<Furniture>();
     static readonly string json_file = "furniture.json";
     
+    static readonly string plugins_dir = System.IO.Path.Combine(
+                                                Directory.GetCurrentDirectory(),
+                                                "Plugins");
+
     static void Main()
     {            
         while (true)
