@@ -1,4 +1,4 @@
-﻿using Lab4;
+﻿using Lab5_6;
 using System.IO.Compression;
 using System.Text;
 
@@ -24,12 +24,12 @@ namespace Lab4_Plugins
                 {
                     msi.CopyTo(gs);                    
                 }
-                return Encoding.UTF8.GetString(mso.ToArray());
+                return Convert.ToBase64String(mso.ToArray());
             }
         }
         public string ParseOut(string input)
         {
-            using (var msi = new MemoryStream(Encoding.UTF8.GetBytes(input)))
+            using (var msi = new MemoryStream(Convert.FromBase64String(input)))
             using (var mso = new MemoryStream())
             {
                 using (var gs = new GZipStream(msi, CompressionMode.Decompress))

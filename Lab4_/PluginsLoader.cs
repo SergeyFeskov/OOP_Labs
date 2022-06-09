@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
+using Lab5_6;
+using yakov = yakov.OOP.EnhancedPaint.Plugins.Interfaces;
 
 namespace Lab4
 {
@@ -37,15 +33,21 @@ namespace Lab4
             {
                 Assembly asm = Assembly.LoadFrom(file.FullName);
                 Type plugin_interface_type = typeof(IPlugin);
-                Type[] types = asm.GetTypes().Where(p => plugin_interface_type.IsAssignableFrom(p) && p.IsClass).ToArray();
-                // var types = asm.GetTypes().Where(t => t.GetInterfaces().Where(i => i.FullName == typeof(IPlugin).FullName).Any() && t.IsClass);
+                Type[] types = asm.GetTypes().Where(p => plugin_interface_type.IsAssignableFrom(p) && p.IsClass).ToArray();                
                 foreach (Type type in types)
                 {
                     var plugin = asm.CreateInstance(type.FullName) as IPlugin;
                     Plugins.Add(plugin);
-                }   
-                
-                Type adaptee_interface_type = typeof()
+                }
+
+                Type adaptee_interface_type = typeof(yakov::IRabinCrypter);                
+                Type[] adaptee_types = asm.GetTypes().Where(p => adaptee_interface_type.IsAssignableFrom(p) && p.IsClass).ToArray();
+                foreach (Type type in adaptee_types)
+                {
+                    var adaptee = (yakov::IRabinCrypter)asm.CreateInstance(type.FullName);
+                    var adapter = (IPlugin)(new RabinCrypterPluginAdapter(adaptee));
+                    Plugins.Add(adapter);
+                }
             }
         }
     }

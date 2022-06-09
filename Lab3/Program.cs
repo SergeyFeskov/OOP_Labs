@@ -1,6 +1,8 @@
 ﻿using Lab3.JSONSerializer;
 using Lab3.Furnitures;
 using Lab3.Parsers;
+using Lab4;
+using Lab5_6;
 
 class Program
 {
@@ -23,9 +25,21 @@ class Program
     static readonly string plugins_dir = System.IO.Path.Combine(
                                                 Directory.GetCurrentDirectory(),
                                                 "Plugins");
+    static PluginsLoader plugins_loader;
 
     static void Main()
-    {            
+    {
+        plugins_loader = new PluginsLoader(plugins_dir);
+        
+        //IPlugin plugin = new DeflateArchivator();
+        //string str = Console.ReadLine();
+        //string arch = plugin.ParseIn(str);
+        //Console.WriteLine(arch);
+        //string res = plugin.ParseOut(arch);
+        //Console.WriteLine(res);
+        //Console.ReadKey();
+        //return;
+
         while (true)
         {
             Console.Clear();
@@ -227,7 +241,28 @@ class Program
         } 
         else
         {
-            furnitures = JSONSerializer.LoadFromJSON<List<Furniture>>(json_file);
+            string header;
+            string content;
+            using (StreamReader reader = new StreamReader(json_file, System.Text.Encoding.UTF8))
+            {
+                header = reader.ReadLine();
+                content = reader.ReadToEnd();
+            }
+            if (header != "")
+            {
+                IPlugin plugin;
+                try
+                {
+                    plugin = plugins_loader.Plugins.Where(p => p.Name == header).First();
+                } catch (InvalidOperationException) {
+                    Console.WriteLine($"ERROR: plugin '{header}' not found in loaded plugins!");
+                    Console.WriteLine("Furniture list can't be loaded.");
+                    Console.ReadKey(true);
+                    return;
+                }                
+                content = plugin.ParseOut(content);                
+            }
+            furnitures = JSONSerializer.Deserialize<List<Furniture>>(content);
             Console.WriteLine($"List loaded from '{json_file}'!");
         }        
         Console.ReadKey();        
@@ -236,7 +271,40 @@ class Program
     static void SaveToFile(List<Furniture> furnitures)
     {
         Console.Clear();
-        JSONSerializer.SaveAsJSON(json_file, furnitures);
+        string json_string = JSONSerializer.Serialize(furnitures);
+        string header = "";
+        string string_to_save = json_string;                
+        if (plugins_loader.Plugins.Count != 0)
+        {
+            Console.WriteLine("Do you want to process furniture list before saving? (type 'yes' or 'no')");
+            string answer = Console.ReadLine();            
+            while (!String.Equals(answer, "yes") && !String.Equals(answer, "no"))
+            {
+                Console.Write("Type 'yes' or 'no': ");
+                answer = Console.ReadLine();
+            }            
+            if (answer == "yes")
+            {
+                Console.Clear();
+                int count = 0;
+                foreach (IPlugin plugin in plugins_loader.Plugins)
+                {
+                    Console.WriteLine($"{++count}) {plugin.Name} ({plugin.Description})");
+                }
+                Console.WriteLine();
+                Console.Write("Enter number of plugin-processor, which will process furniture list: ");
+                int pluginNum;
+                while (!Int32.TryParse(Console.ReadLine(), out pluginNum) || (pluginNum < 1 || pluginNum > count))
+                {
+                    Console.Write("Enter number of plugin-processor: ");
+                }
+                IPlugin curr_plugin = plugins_loader.Plugins[pluginNum - 1];
+                header = curr_plugin.Name;
+                string_to_save = curr_plugin.ParseIn(json_string);
+                Console.Clear();
+            }           
+        }            
+        File.WriteAllText(json_file, header + "\n" + string_to_save);
         Console.WriteLine($"List saved to '{json_file}'!");
         Console.ReadKey();
     }
