@@ -9,7 +9,27 @@ namespace Lab4
         public List<IPlugin> Plugins { get; protected set; }
         public string PluginsDirPath { get; protected set; }
 
-        public PluginsLoader(string pluginsDirPath)
+        private static PluginsLoader loader;
+
+        public static PluginsLoader GetPluginsLoader()
+        {
+            if (loader == null)
+            {
+                throw new Exception("Set plugins dir path.");
+            }
+            return loader;
+        }
+
+        public static PluginsLoader GetPluginsLoader(string pluginsDirPath)
+        {
+            if (loader == null || loader.PluginsDirPath != pluginsDirPath)
+            {
+                loader = new PluginsLoader(pluginsDirPath);
+            }
+            return loader;
+        }
+
+        private PluginsLoader(string pluginsDirPath)
         {
             PluginsDirPath = pluginsDirPath;
             LoadPlugins();
@@ -37,7 +57,7 @@ namespace Lab4
                 foreach (Type type in types)
                 {
                     var plugin = asm.CreateInstance(type.FullName) as IPlugin;
-                    Plugins.Add(plugin);
+                    Plugins.Add(new PluginsProxy(plugin));
                 }
 
                 Type adaptee_interface_type = typeof(yakov::IRabinCrypter);                
@@ -46,7 +66,7 @@ namespace Lab4
                 {
                     var adaptee = (yakov::IRabinCrypter)asm.CreateInstance(type.FullName);
                     var adapter = (IPlugin)(new RabinCrypterPluginAdapter(adaptee));
-                    Plugins.Add(adapter);
+                    Plugins.Add(new PluginsProxy(adapter));
                 }
             }
         }

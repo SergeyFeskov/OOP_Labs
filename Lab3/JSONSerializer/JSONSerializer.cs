@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Lab3.Furnitures;
 using Newtonsoft.Json;
+using Lab5_6;
 
-namespace Lab3.JSONSerializer
+namespace Lab3.JSONSerializer 
 {
     internal class JSONSerializer
     {
@@ -17,7 +18,6 @@ namespace Lab3.JSONSerializer
 
         public static string Serialize<T>(T obj)
         {
-
             return JsonConvert.SerializeObject(obj, SerializeOptions);
         }
 
@@ -27,25 +27,6 @@ namespace Lab3.JSONSerializer
             if (obj == null)
                 throw new Exception("Deserialize method returned null.");
             return obj;
-        }
-
-        public static void SaveAsJSON<T>(string path, T obj)
-        {
-            string json = JSONSerializer.Serialize<T>(obj);
-            using (StreamWriter writer = new StreamWriter(path, false, System.Text.Encoding.UTF8))
-            {
-                writer.Write(json);
-            }
-        }
-
-        public static T LoadFromJSON<T>(string path)
-        {
-            string json;
-            using (StreamReader reader = new StreamReader(path, System.Text.Encoding.UTF8))
-            {
-                json = reader.ReadToEnd();
-            }
-            return JSONSerializer.Deserialize<T>(json);
-        }     
+        }             
     }
 }

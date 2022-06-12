@@ -29,17 +29,7 @@ class Program
 
     static void Main()
     {
-        plugins_loader = new PluginsLoader(plugins_dir);
-        
-        //IPlugin plugin = new DeflateArchivator();
-        //string str = Console.ReadLine();
-        //string arch = plugin.ParseIn(str);
-        //Console.WriteLine(arch);
-        //string res = plugin.ParseOut(arch);
-        //Console.WriteLine(res);
-        //Console.ReadKey();
-        //return;
-
+        plugins_loader = PluginsLoader.GetPluginsLoader(plugins_dir);        
         while (true)
         {
             Console.Clear();
@@ -85,8 +75,7 @@ class Program
                 case 7:
                     return;                   
             }
-        }
-        
+        }       
     }
 
     static void ChangeFurnitureFields()
